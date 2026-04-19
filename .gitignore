@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+
+# Claude Code state
+.claude/
+
+# Copyrighted article PDFs — see references.md for DOIs
+articles/
+
+# RLVR training data (~60MB from HF) — reproducible via datasets.load_dataset
+data/
+
+# Fine-tuning pipelines are hosted separately at github.com/tjuzek/rlvr-demo
+code-rlvr/
+
+# Personal dev notes
+conversation-notes.md
+human-notes-tommie.txt
+slide-notes.txt
+
+# Editor / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/

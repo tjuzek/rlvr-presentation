@@ -1,0 +1,1143 @@
+/* RLVR Presentation — Dark Academic Theme
+ *
+ * Design system: layered dark backgrounds, single accent with purposeful
+ * secondary colors, generous whitespace, confident typography.
+ * Inspired by Linear, Stripe, and Apple keynote aesthetics.
+ */
+
+/* ── Design Tokens ─────────────────────────────────────────────── */
+
+:root {
+    /* Background layers — rich charcoal, not GitHub-dark */
+    --bg-base:      #09090b;
+    --bg-primary:   #0c0c0f;
+    --bg-secondary: #141418;
+    --bg-card:      #19191f;
+    --bg-elevated:  #1f1f27;
+
+    /* Text hierarchy */
+    --text-primary:   #f0f0f2;
+    --text-secondary: #9898a6;
+    --text-muted:     #65657a;
+
+    /* Accent — electric blue (used sparingly for emphasis) */
+    --accent:        #4d8eff;
+    --accent-glow:   rgba(77, 142, 255, 0.15);
+    --accent-subtle: rgba(77, 142, 255, 0.08);
+
+    /* Semantic colors */
+    --green:        #34d399;
+    --green-glow:   rgba(52, 211, 153, 0.12);
+    --teal:         #2dd4bf;
+    --teal-glow:    rgba(45, 212, 191, 0.12);
+    --red:          #f87171;
+    --red-glow:     rgba(248, 113, 113, 0.12);
+    --orange:       #fbbf24;
+    --orange-glow:  rgba(251, 191, 36, 0.10);
+    --purple:       #a78bfa;
+    --purple-glow:  rgba(167, 139, 250, 0.12);
+
+    /* Borders — very subtle separation */
+    --border:       rgba(255, 255, 255, 0.07);
+    --border-light: rgba(255, 255, 255, 0.12);
+
+    /* Typography — full monospace presentation for seamless diffusion transitions */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+    --font-body: var(--font-mono);  /* presentation body — monospace for diffusion alignment */
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+}
+
+/* ── Font Import ───────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+/* ── Reveal.js Base Overrides ──────────────────────────────────── */
+
+.reveal-viewport {
+    background: var(--bg-base);
+    /* Subtle radial gradient for depth — light center, darker edges */
+    background-image:
+        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(77, 142, 255, 0.03) 0%, transparent 70%);
+}
+
+.reveal {
+    font-family: var(--font-body);
+    font-size: 26px;
+    color: var(--text-primary);
+    font-feature-settings: 'zero' 1;  /* slashed zero for data clarity */
+    font-variant-ligatures: none;     /* no ligatures in body text — clean character grid */
+}
+
+.reveal .slides {
+    text-align: left;
+}
+
+.reveal .slides section {
+    padding: 40px 64px;
+    box-sizing: border-box;   /* padding inside the 100% width, not added to it */
+}
+
+/* Ensure all slide children respect boundaries */
+.reveal .slides section *,
+.reveal .slides section *::before,
+.reveal .slides section *::after {
+    box-sizing: border-box;
+}
+
+/* ── Headings ──────────────────────────────────────────────────── */
+/*
+ * Monospace headings need special handling:
+ * - No negative letter-spacing (makes monospace feel cramped/overlapping)
+ * - Use neutral or slightly positive tracking
+ * - Rely on weight + size + color for hierarchy, not tracking tricks
+ * - Line-height is more generous than proportional headings
+ * - Max weight is 700 (JetBrains Mono doesn't have 800)
+ */
+
+.reveal h1 {
+    font-size: 2.4em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35em;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-align: left;
+}
+
+.reveal h2 {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.55em;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-align: left;
+    /* Clean bottom accent line — short and purposeful */
+    padding-bottom: 0.3em;
+    border-bottom: none;
+    background-image: linear-gradient(to right, var(--accent), transparent 40%);
+    background-size: 100% 2px;
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    border-image: none;
+}
+
+.reveal h3 {
+    font-size: 1.05em;
+    font-weight: 600;
+    color: var(--purple);
+    margin-bottom: 0.3em;
+    letter-spacing: 0;
+    text-align: left;
+}
+
+.reveal h4 {
+    font-size: 0.72em;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ── Body Text & Lists ─────────────────────────────────────────── */
+/*
+ * Monospace body text needs more line-height than proportional.
+ * The uniform character widths create a denser visual texture,
+ * so we open up vertical spacing to compensate.
+ */
+
+.reveal p {
+    line-height: 1.7;
+    margin-bottom: 0.6em;
+    color: var(--text-primary);
+}
+
+.reveal ul, .reveal ol {
+    margin-left: 0.8em;
+    margin-bottom: 0.6em;
+}
+
+.reveal li {
+    margin-bottom: 0.3em;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.reveal li::marker {
+    color: var(--accent);
+}
+
+/* Nested list items are secondary */
+.reveal li li {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+/* ── Inline Emphasis ───────────────────────────────────────────── */
+
+.reveal strong {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.reveal em {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-weight: 300;
+}
+
+/* ── Code Blocks — Premium IDE Feel ────────────────────────────── */
+/*
+ * Since the entire presentation is now monospace, code blocks differentiate
+ * through background treatment and color rather than font change alone.
+ * Inline code uses a subtle bg + accent color to stand out from body text.
+ */
+
+.reveal pre {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    margin: 0.7em 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.65em;
+    /* Subtle inner glow on top edge */
+    box-shadow:
+        0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+        0 8px 24px -4px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+/* Subtle top-bar accent line */
+.reveal pre::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--radius-md);
+    right: var(--radius-md);
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(77, 142, 255, 0.3), transparent);
+}
+
+.reveal pre code {
+    font-family: var(--font-mono);
+    line-height: 1.55;
+    max-height: 500px;
+    padding: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 1em;
+    font-variant-ligatures: contextual;  /* allow ligatures in actual code blocks */
+}
+
+.reveal code {
+    font-family: var(--font-mono);
+    background: var(--bg-elevated);
+    padding: 0.1em 0.45em;
+    border-radius: var(--radius-sm);
+    font-size: 0.85em;
+    color: var(--orange);
+    border: 1px solid var(--border);
+}
+
+.reveal pre code {
+    border: none;
+}
+
+/* ── Tables — Scannable & Clean ────────────────────────────────── */
+/*
+ * Monospace tables are a natural fit — columns of numbers align perfectly.
+ * Slightly tightened font-size since monospace is wider.
+ * Tabular nums ensure columns of digits align vertically.
+ */
+
+.reveal table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin: 0.8em 0;
+    font-size: 0.66em;
+    font-feature-settings: 'tnum' 1, 'zero' 1;  /* tabular numbers, slashed zero */
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.reveal table th {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.82em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.reveal table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.reveal table tr:last-child td {
+    border-bottom: none;
+}
+
+.reveal table tr:hover td {
+    background: var(--accent-subtle);
+}
+
+/* Bold cells in tables — accent color for emphasis */
+.reveal table td strong,
+.reveal table th strong {
+    color: var(--accent);
+}
+
+/* ── Blockquotes ───────────────────────────────────────────────── */
+
+.reveal blockquote {
+    background: var(--bg-card);
+    border-left: 3px solid var(--purple);
+    padding: 14px 22px;
+    margin: 0.7em 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--text-secondary);
+    box-shadow: none;
+    font-size: 0.95em;
+}
+
+.reveal blockquote p {
+    color: var(--text-secondary);
+}
+
+/* ── Title Slide ───────────────────────────────────────────────── */
+
+.reveal section.title-slide {
+    text-align: center;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.reveal section.title-slide h1 {
+    font-size: 2.8em;
+    text-align: center;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 0.25em;
+    /* Gradient text — blue to purple sweep */
+    background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 50%, #4d8eff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.reveal section.title-slide h3 {
+    font-size: 1.05em;
+    font-weight: 400;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
+    margin-bottom: 0.4em;
+}
+
+.reveal section.title-slide p {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.88em;
+}
+
+.reveal section.title-slide strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.reveal section.title-slide em {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    font-weight: 300;
+}
+
+/* ── Highlight Boxes ───────────────────────────────────────────── */
+
+.reveal .highlight-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    margin: 0.6em 0;
+    /* Left accent stripe */
+    border-left: 3px solid var(--accent);
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
+}
+
+.reveal .highlight-box.green {
+    border-left-color: var(--green);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(52, 211, 153, 0.04) 100%);
+}
+
+.reveal .highlight-box.red {
+    border-left-color: var(--red);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248, 113, 113, 0.04) 100%);
+}
+
+.reveal .highlight-box.orange {
+    border-left-color: var(--orange);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(251, 191, 36, 0.04) 100%);
+}
+
+/* ── Column Layouts ────────────────────────────────────────────── */
+
+.reveal .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+}
+
+.reveal .columns-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-lg);
+    align-items: start;
+}
+
+/* ── Chart Containers ──────────────────────────────────────────── */
+
+.reveal .chart-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin: 0.5em 0;
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Pipeline Diagram ──────────────────────────────────────────── */
+
+.reveal .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 1.2em 0;
+    flex-wrap: wrap;
+}
+
+.reveal .pipeline .step {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.74em;
+    min-width: 130px;
+    transition: all 200ms ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.reveal .pipeline .step small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.82em;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.reveal .pipeline .step.active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--accent-glow) 100%);
+    color: var(--accent);
+    box-shadow: 0 0 20px -4px rgba(77, 142, 255, 0.25);
+}
+
+.reveal .pipeline .arrow {
+    font-size: 1.2em;
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* ── Verifiability Spectrum ────────────────────────────────────── */
+
+.reveal .spectrum {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 0.8em 0;
+}
+
+.reveal .spectrum .col {
+    border-radius: var(--radius-md);
+    padding: 16px;
+    font-size: 0.6em;
+    line-height: 1.55;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 200ms ease;
+}
+
+.reveal .spectrum .col strong {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 0.4em;
+    letter-spacing: 0.02em;
+}
+
+.reveal .spectrum .col.green {
+    background: linear-gradient(180deg, rgba(45, 212, 191, 0.1) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+}
+
+.reveal .spectrum .col.green strong {
+    color: var(--teal);
+}
+
+.reveal .spectrum .col.orange {
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.reveal .spectrum .col.orange strong {
+    color: var(--orange);
+}
+
+.reveal .spectrum .col.red {
+    background: linear-gradient(180deg, rgba(248, 113, 113, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.reveal .spectrum .col.red strong {
+    color: var(--red);
+}
+
+/* ── KaTeX / Math ──────────────────────────────────────────────── */
+
+.reveal .katex-display {
+    margin: 1em 0;
+}
+
+.reveal .katex {
+    font-size: 1.05em;
+    color: var(--text-primary);
+}
+
+/* Give display math a subtle background */
+.reveal .katex-display > .katex {
+    padding: 12px 0;
+}
+
+/* ── Reward Box (RLVR formula highlight) ───────────────────────── */
+
+.reveal .reward-box {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(45, 212, 191, 0.06) 100%);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 20px 28px;
+    text-align: center;
+    font-size: 1.1em;
+    margin: 0.8em auto;
+    max-width: 520px;
+    box-shadow:
+        0 0 30px -8px rgba(45, 212, 191, 0.15),
+        0 4px 16px -2px rgba(0, 0, 0, 0.3);
+}
+
+.reveal .reward-box .formula {
+    font-family: var(--font-mono);
+    color: var(--teal);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0.3em 0;
+    letter-spacing: 0;
+}
+
+/* ── Data Example (JSON display) ───────────────────────────────── */
+
+.reveal .data-example {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    font-size: 0.54em;
+    font-family: var(--font-mono);
+    line-height: 1.5;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Slide Number ──────────────────────────────────────────────── */
+
+.reveal .slide-number {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--text-muted);
+    background: transparent;
+    letter-spacing: 0.02em;
+    /* Reposition to bottom center to avoid overlapping navigation arrows */
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+}
+
+/* ── Progress Bar ──────────────────────────────────────────────── */
+
+.reveal .progress {
+    height: 2px;
+    color: var(--accent);
+}
+
+.reveal .progress span {
+    background: linear-gradient(to right, var(--accent), var(--purple));
+}
+
+/* ── Speaker Notes ─────────────────────────────────────────────── */
+
+.reveal .speaker-notes {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* ── Images ────────────────────────────────────────────────────── */
+
+.reveal img {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Fragment Animations ───────────────────────────────────────── */
+
+.reveal .fragment.highlight-current-blue.visible {
+    color: var(--accent);
+}
+
+/* ── Horizontal Rules ──────────────────────────────────────────── */
+
+.reveal hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-light), transparent);
+    margin: 1.2em 0;
+}
+
+/* ── Attribution Footer ────────────────────────────────────────── */
+
+.reveal .attribution {
+    position: absolute;
+    bottom: 20px;
+    right: 40px;
+    font-size: 0.5em;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ── Heading Depth — Subtle Text Shadow ────────────────────────── */
+
+.reveal h1, .reveal h2 {
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Diffusion Transition Effect ───────────────────────────────── */
+
+.diff-char {
+    display: inline;
+    white-space: pre;
+}
+
+/* Morph bridge: blocks fading in during count expansion */
+.diff-char.diff-morph-in {
+    opacity: 0;
+    display: inline;
+}
+
+.diff-char.diff-morph-visible {
+    opacity: 1;
+    transition: opacity 60ms ease-out;
+}
+
+/* Morph bridge: blocks fading out during count contraction */
+.diff-char.diff-morph-removing {
+    opacity: 0;
+    transition: opacity 50ms ease-in;
+}
+
+/* KaTeX fade during diffusion entrance */
+.reveal section.diffusion-entering .katex,
+.reveal section.diffusion-entering .katex-display {
+    opacity: 0;
+    transition: opacity 250ms ease-in;
+}
+
+.reveal section.diffusion-entering.diffusion-math-visible .katex,
+.reveal section.diffusion-entering.diffusion-math-visible .katex-display {
+    opacity: 1;
+}
+
+/* ── Chart Transitions — Blur + Fade + Scale ─────────────────────
+ *
+ * Charts start hidden (opacity 0, blurred, slightly scaled down).
+ * On entrance, they resolve smoothly via CSS transition.
+ * On exit, they dissolve back into the dark background.
+ *
+ * GPU-accelerated (opacity, transform, filter) — no canvas hacks,
+ * no Plotly.toImage dependency, no timing fragility.
+ */
+
+.chart-container {
+    position: relative;
+}
+
+/* Default hidden state for charts on entering slides */
+.reveal section.diffusion-entering .chart-container {
+    opacity: 0;
+    filter: blur(18px) saturate(0.3);
+    transform: scale(0.97);
+    transition: none; /* no transition while setting initial state */
+}
+
+/* Revealed state — charts emerge from blur */
+.reveal section.diffusion-entering.diffusion-charts-visible .chart-container {
+    opacity: 1;
+    filter: blur(0px) saturate(1);
+    transform: scale(1);
+    transition:
+        opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+        filter 600ms cubic-bezier(0.16, 1, 0.3, 1),
+        transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Exit state — charts dissolve back into the background */
+.reveal section.diffusion-exiting .chart-container {
+    opacity: 0;
+    filter: blur(18px) saturate(0.3);
+    transform: scale(0.97);
+    transition:
+        opacity 350ms cubic-bezier(0.4, 0, 1, 1),
+        filter 400ms cubic-bezier(0.4, 0, 1, 1),
+        transform 350ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Images fade during diffusion */
+.reveal section.diffusion-entering img {
+    opacity: 0;
+    transition: opacity 250ms ease-in;
+}
+
+.reveal section.diffusion-entering.diffusion-media-visible img {
+    opacity: 1;
+}
+
+/* Block interaction during animation */
+.reveal.diffusion-animating {
+    pointer-events: none;
+}
+
+/* ── Utility: Section Divider Label ────────────────────────────── */
+
+.reveal .section-label {
+    font-size: 0.65em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 0.3em;
+    opacity: 0.7;
+}
+
+/* ── Utility: Metric / Number Callout ──────────────────────────── */
+
+.reveal .metric {
+    font-size: 2.2em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    line-height: 1;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+
+.reveal .metric-label {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ── Utility: Side-by-Side Comparison ──────────────────────────── */
+
+.reveal .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.reveal .comparison > div {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+}
+
+.reveal .comparison > div:first-child {
+    background: linear-gradient(180deg, rgba(248, 113, 113, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    border-top: 2px solid var(--red);
+}
+
+.reveal .comparison > div:last-child {
+    background: linear-gradient(180deg, rgba(45, 212, 191, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-top: 2px solid var(--teal);
+}
+
+/* ── Preference Data Comparison (RLHF slide) ────────────────────── */
+
+.reveal .columns-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+    align-items: start;
+}
+
+.reveal .pref-chosen,
+.reveal .pref-rejected {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    font-size: 0.85em;
+}
+
+.reveal .pref-chosen {
+    background: linear-gradient(180deg, rgba(45, 212, 191, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-top: 2px solid var(--teal);
+}
+
+.reveal .pref-chosen h4 {
+    color: var(--teal);
+}
+
+.reveal .pref-rejected {
+    background: linear-gradient(180deg, rgba(248, 113, 113, 0.08) 0%, var(--bg-card) 100%);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    border-top: 2px solid var(--red);
+}
+
+.reveal .pref-rejected h4 {
+    color: var(--red);
+}
+
+/* ── Plateau Grid (narrative bridge slide) ───────────────────────── */
+
+.reveal .plateau-grid {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin: 1em 0;
+    flex-wrap: wrap;
+}
+
+.reveal .plateau-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    text-align: center;
+    min-width: 140px;
+    flex: 1;
+    max-width: 180px;
+}
+
+.reveal .plateau-icon {
+    font-size: 1.6em;
+    margin-bottom: 6px;
+}
+
+.reveal .plateau-label {
+    font-size: 0.65em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.reveal .plateau-score {
+    font-size: 0.6em;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.reveal .plateau-score.good {
+    color: var(--green);
+    background: var(--green-glow);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.reveal .plateau-score.mid {
+    color: var(--orange);
+    background: var(--orange-glow);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+/* ── Human Side — Presenter Handoff (warm editorial palette) ─────
+ *
+ * Scoped override for the bridge-to-Lan slide. Shifts the cool
+ * blue/purple default to a warm umber + ember + sand scheme to
+ * signal a new chapter — the human labor behind the data.
+ * Palette:
+ *   warm ink base       #15110e  (near-black with umber undertone)
+ *   warm surface        #1e1813
+ *   warm elevated       #2a211a
+ *   ember accent        #f0a868  (muted amber — primary accent)
+ *   rose secondary      #e8927c  (terracotta — strong / emphasis)
+ *   sand / parchment    #efe4d2  (text primary — warm off-white)
+ *   muted sand          #b8a894  (secondary text)
+ *   faint sand          #8a7d6f  (muted text)
+ */
+
+.reveal section.human-side {
+    /* Warm ink base with a very soft ember radial for lamplight depth */
+    background-color: #15110e;
+    background-image:
+        radial-gradient(ellipse 70% 55% at 50% 38%, rgba(240, 168, 104, 0.06) 0%, transparent 72%);
+    color: #efe4d2;
+}
+
+/* Headings — H2 underline sweep becomes ember, H3 shifts from purple to rose */
+.reveal section.human-side h1,
+.reveal section.human-side h2,
+.reveal section.human-side h3,
+.reveal section.human-side h4 {
+    color: #f5ecdc;
+}
+
+.reveal section.human-side h2 {
+    background-image: linear-gradient(to right, #f0a868, transparent 40%);
+}
+
+.reveal section.human-side h3 {
+    color: #e8927c;
+}
+
+.reveal section.human-side h4 {
+    color: #8a7d6f;
+}
+
+/* Body text + lists */
+.reveal section.human-side p,
+.reveal section.human-side li {
+    color: #efe4d2;
+}
+
+.reveal section.human-side li li {
+    color: #b8a894;
+}
+
+.reveal section.human-side li::marker {
+    color: #f0a868;
+}
+
+/* Strong / em — ember for strong, warm muted for em */
+.reveal section.human-side strong {
+    color: #f0a868;
+}
+
+.reveal section.human-side em {
+    color: #d9c6ad;
+}
+
+/* Inline code — warm surface with ember text */
+.reveal section.human-side code {
+    background: #2a211a;
+    color: #f0a868;
+    border-color: rgba(240, 168, 104, 0.18);
+}
+
+/* Blockquote — rose/terracotta stripe over warm card */
+.reveal section.human-side blockquote {
+    background: #1e1813;
+    border-left-color: #e8927c;
+    color: #d9c6ad;
+}
+
+.reveal section.human-side blockquote p {
+    color: #d9c6ad;
+}
+
+/* Tables — warm elevated headers */
+.reveal section.human-side table {
+    border-color: rgba(239, 228, 210, 0.08);
+}
+
+.reveal section.human-side table th {
+    background: #2a211a;
+    color: #d9c6ad;
+    border-bottom-color: rgba(240, 168, 104, 0.2);
+}
+
+.reveal section.human-side table td {
+    color: #efe4d2;
+    border-bottom-color: rgba(239, 228, 210, 0.06);
+}
+
+.reveal section.human-side table tr:hover td {
+    background: rgba(240, 168, 104, 0.06);
+}
+
+.reveal section.human-side table td strong,
+.reveal section.human-side table th strong {
+    color: #f0a868;
+}
+
+/* HR sweep */
+.reveal section.human-side hr {
+    background: linear-gradient(to right, transparent, rgba(240, 168, 104, 0.25), transparent);
+}
+
+/* ── No-magic slide — cool "moment" epigraph ─────────────────── */
+/* Scoped central-beat slide that sits between the live demo and the
+   research-roadmap. Mirrors the title slide's blue→purple gradient
+   on the H2 to rhyme with the opening, over a subtle cyan aura so
+   the slide reads as a deliberate pause. Body stays warm-white for
+   AA+ contrast; blockquote is restyled as a centered epigraph
+   (no left rule, no card background) so it feels quieter than a
+   standard pull-quote. */
+
+.reveal section.no-magic {
+    text-align: center;
+    /* Soft aurora — cyan core, violet bloom, fading to transparent.
+       Two offset radials avoid a bullseye feel. */
+    background:
+        radial-gradient(ellipse 60% 45% at 50% 38%, rgba(77, 142, 255, 0.12), transparent 70%),
+        radial-gradient(ellipse 40% 30% at 50% 62%, rgba(167, 139, 250, 0.08), transparent 70%);
+}
+
+.reveal section.no-magic h2 {
+    font-size: 2.2em;
+    margin-bottom: 1em;
+    padding-bottom: 0;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    /* Override the global .reveal h2 { text-align: left } so the headline
+       sits centered with the body paragraph and epigraph below it. */
+    text-align: center;
+    /* Gradient text — same sweep as the title slide H1:
+       #4d8eff (accent blue) → #a78bfa (violet) → #4d8eff.
+       Explicitly override the global H2's 2px accent-bar background
+       (background-image/size/position/repeat) so the gradient fills
+       the whole text glyphs rather than clipping to a 2px strip. */
+    background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 50%, #4d8eff 100%);
+    background-size: 100% 100%;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    border-bottom: none;
+}
+
+.reveal section.no-magic > p {
+    font-size: 1.2em;
+    line-height: 1.7;
+    margin-top: 0.6em;
+    color: var(--text-primary);
+    letter-spacing: 0.005em;
+    text-align: center;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Blockquote reframed as a quiet centered epigraph, not a pull-quote */
+.reveal section.no-magic blockquote {
+    margin: 2.4em auto 0;
+    max-width: 760px;
+    background: transparent;
+    border-left: none;
+    padding: 1.1em 1.5em 0;
+    font-style: normal;
+    text-align: center;
+    position: relative;
+}
+
+/* Hairline accent above the epigraph — cyan to violet, centered */
+.reveal section.no-magic blockquote::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(77, 142, 255, 0.55), rgba(167, 139, 250, 0.55), transparent);
+}
+
+.reveal section.no-magic blockquote p {
+    font-size: 0.98em;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    letter-spacing: 0.003em;
+}
+
+/* ── Slide Navigation ─────────────────────────────────────────── */
+
+.slide-nav {
+    position: fixed;
+    bottom: 16px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.slide-nav-group {
+    display: flex;
+    gap: 6px;
+    pointer-events: auto;
+}
+
+.slide-nav-btn {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 18px;
+    font-family: var(--font-mono);
+    padding: 4px 12px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 200ms ease, color 200ms ease, background 200ms ease;
+}
+
+.slide-nav-btn:hover {
+    opacity: 1;
+    color: var(--accent);
+    background: var(--bg-card);
+    border-color: var(--accent);
+}

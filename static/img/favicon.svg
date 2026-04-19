@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- RLVR Favicon — Diffusion grid: solid blocks dissolving into noise -->
+  <!-- 3x3 grid with 1px gaps, mapped to the block chars: █ ▓ ░ -->
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#09090b"/>
+
+  <!-- Row 1: mostly resolved -->
+  <rect x="4"  y="4"  width="7" height="7" rx="1" fill="#4d8eff" opacity="1.0"/>
+  <rect x="12.5" y="4"  width="7" height="7" rx="1" fill="#4d8eff" opacity="0.85"/>
+  <rect x="21" y="4"  width="7" height="7" rx="1" fill="#a78bfa" opacity="0.65"/>
+
+  <!-- Row 2: mid-diffusion -->
+  <rect x="4"  y="12.5" width="7" height="7" rx="1" fill="#4d8eff" opacity="0.72"/>
+  <rect x="12.5" y="12.5" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.48"/>
+  <rect x="21" y="12.5" width="7" height="7" rx="1" fill="#34d399" opacity="0.32"/>
+
+  <!-- Row 3: dissolving into noise -->
+  <rect x="4"  y="21" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.42"/>
+  <rect x="12.5" y="21" width="7" height="7" rx="1" fill="#34d399" opacity="0.22"/>
+  <rect x="21" y="21" width="7" height="7" rx="1" fill="#4d8eff" opacity="0.10"/>
+</svg>
