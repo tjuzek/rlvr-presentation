@@ -1,7 +1,7 @@
 # demo — four RLVR experiments
 
 Follow-up work to the SC-AI Seminar talk on *Reinforcement Learning from
-Verifiable Rewards* (Tom & Lan Li, April 2026). The same GRPO + LoRA training recipe, varied along the
+Verifiable Rewards* (Tommie & Lan Li, April 2026). The same GRPO + LoRA training recipe, varied along the
 axes that determine whether GRPO has signal to learn from:
 the base model (so: the baseline pass rate), group size `G`,
 sampling temperature, and — finally, in run 4 — the policy update

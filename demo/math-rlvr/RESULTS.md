@@ -74,4 +74,4 @@ bash run_all.sh --push   # ~4-5 hours on A10
 
 Pipeline authored by Anthropic's Claude (Opus 4.7) via Claude Code,
 directed by Tommie Juzek (`tjuzek@fsu.edu`). The scientific
-interpretation and any errors are Tom's.
+interpretation and any errors are Tommie's.

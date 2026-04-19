@@ -1139,7 +1139,7 @@ def render_page(runs: list[dict]) -> str:
   <div>
     <div class="eyebrow">rlvr · demo · unified report</div>
     <h1>RLVR on small instruct models — four runs</h1>
-    <div class="subtitle">Companion to the SC-AI Seminar talk on RLVR (April 2026) · Tom &amp; Lan Li</div>
+    <div class="subtitle">Companion to the SC-AI Seminar talk on RLVR (April 2026) · Tommie &amp; Lan Li</div>
   </div>
   <div class="render-meta">Rendered {ts}</div>
 </header>

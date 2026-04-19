@@ -1,6 +1,6 @@
 # RLVR Presentation
 
-Academic presentation on **Reinforcement Learning from Verifiable Rewards (RLVR)** for the [SC-AI Seminar](https://sc-ai.net/) at Florida State University. Presented by Tom and Lan Li.
+Academic presentation on **Reinforcement Learning from Verifiable Rewards (RLVR)** for the [SC-AI Seminar](https://sc-ai.net/) at Florida State University. Presented by Tommie and Lan Li.
 
 Based on the Tulu 3 paper (Allen AI, 2024) and the broader RLVR landscape — training LLMs using automated verification (code tests, math solvers, constraint checks) as reward signals instead of human preference feedback.
 

@@ -1,7 +1,7 @@
 # RLVR — Reinforcement Learning from Verifiable Rewards
 
 A presentation for the [SC-AI Seminar](https://sc-ai.net/) at Florida State
-University. Presented by **Tom** and **Lan Li** (April 2026).
+University. Presented by **Tommie** and **Lan Li** (April 2026).
 
 Based on [Tulu 3](https://arxiv.org/abs/2411.15124) (Allen AI, 2024) and the
 broader RLVR landscape — training LLMs with automated verification (code
@@ -82,6 +82,6 @@ presentation.pdf    Downloadable slide deck (linked at top)
 ## Credits
 
 - Primary source: Lambert et al., [Tulu 3 (Allen AI, 2024)](https://arxiv.org/abs/2411.15124).
-- Presentation by Tom, with Lan Li.
+- Presentation by Tommie, with Lan Li.
 - Built with [reveal.js](https://revealjs.com/) and [FastAPI](https://fastapi.tiangolo.com/).
 - RLVR demo pipelines authored by Anthropic's Claude via Claude Code.
