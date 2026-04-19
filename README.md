@@ -7,12 +7,19 @@ Based on [Tulu 3](https://arxiv.org/abs/2411.15124) (Allen AI, 2024) and the
 broader RLVR landscape — training LLMs with automated verification (code
 tests, math solvers, constraint checks) as the reward signal.
 
-## Companion repo — the experiments
+## Download
 
-The four RLVR fine-tuning runs referenced in the talk live in a separate
-repo, self-contained and reproducible:
+- **[Slides (PDF, 30 pages)](presentation.pdf)** — the full reveal.js deck.
+- **[Results report (PDF, 24 pages)](demo/results/rlvr_demo_report.pdf)** — Overview + the four training runs.
 
-**→ [github.com/tjuzek/rlvr-demo](https://github.com/tjuzek/rlvr-demo)**
+Live versions: `python app.py` serves the reveal.js slides; open
+[`demo/results/rlvr_demo_report.html`](demo/results/rlvr_demo_report.html)
+for the interactive report with working Plotly charts.
+
+## Experiments — [`demo/`](demo/)
+
+The four RLVR fine-tuning runs referenced in the talk live in the
+[`demo/`](demo/) subdirectory of this repo — self-contained and reproducible.
 
 | Run | Task · Model | Δ pass@1 |
 |---|---|---:|
@@ -21,7 +28,7 @@ repo, self-contained and reproducible:
 | 3 | GSM8K · Gemma-2-2B-IT | −0.3pp |
 | 4 | GSM8K · Gemma-2-2B-IT (unlocked update budget) | **+1.8pp** |
 
-See the [unified results report](https://github.com/tjuzek/rlvr-demo/blob/main/results/rlvr_demo_report.html)
+See the [unified results report](demo/results/rlvr_demo_report.html)
 for the full walkthrough of what had to go right.
 
 ## Running the presentation
@@ -67,10 +74,10 @@ static/img/         Paper figures
 templates/          Reveal.js scaffold
 references.md       Full reading list (23 papers)
 grpo_pseudocode.py  GRPO advantage pseudocode referenced in one of the slides
+demo/               Four RLVR fine-tuning runs + unified results report
+make_slides_pdf.sh  Regenerates presentation.pdf (requires app.py running on :8000)
+presentation.pdf    Downloadable slide deck (linked at top)
 ```
-
-The fine-tuning pipelines (verifiers, training configs, result JSON, per-run
-HTML reports) are **not** in this repo — see the companion `rlvr-demo` above.
 
 ## Credits
 

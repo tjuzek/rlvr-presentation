@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RLVR demo — four runs, one narrative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  :root {
+    --bg-base:      #09090b;
+    --bg-primary:   #0c0c0f;
+    --bg-secondary: #141418;
+    --bg-card:      #19191f;
+    --bg-elevated:  #1f1f27;
+    --text-primary:   #f0f0f2;
+    --text-secondary: #c7c7d1;
+    --text-muted:     #8b8b9a;
+    --text-faint:     #65657a;
+    --accent:  #4d8eff;
+    --success: #34d399;
+    --danger:  #f87171;
+    --warn:    #fbbf24;
+    --purple:  #a78bfa;
+    --border:       rgba(255, 255, 255, 0.07);
+    --border-light: rgba(255, 255, 255, 0.12);
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', ui-monospace, monospace;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.03) inset;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg-base); }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    font-size: 19px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-color: var(--bg-base);
+    background-image:
+      radial-gradient(ellipse 70% 45% at 50% 0%, rgba(77, 142, 255, 0.055) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 35% at 85% 100%, rgba(167, 139, 250, 0.035) 0%, transparent 60%);
+    background-attachment: fixed;
+    font-feature-settings: 'ss01' 1, 'cv11' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2.5rem 4rem 4rem;
+  }
+
+  /* ── Header ─────────────────────────────────────────────── */
+  .report-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 2rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .report-header .eyebrow { margin-bottom: 0.4rem; }
+  .report-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.35rem 0;
+    background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 55%, #4d8eff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .report-header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-family: var(--font-mono);
+    margin: 0;
+  }
+  .render-meta {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ── Tabs ─────────────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 2rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-base);
+    z-index: 10;
+    padding-top: 1rem;
+  }
+  .tab {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: all 150ms ease;
+    letter-spacing: 0.01em;
+  }
+  .tab:hover { color: var(--text-primary); background: var(--bg-card); }
+  .tab.active {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border-color: var(--border-light);
+    box-shadow: 0 0 0 1px var(--accent) inset, 0 2px 6px rgba(77, 142, 255, 0.12);
+  }
+
+  /* ── Tab panels ───────────────────────────────────────── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  h2, .hero-title, .run-title {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    font-size: 2.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 0.75rem 0;
+  }
+  .hero-title {
+    background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 55%, #4d8eff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin: 0 0 1.75rem 0;
+  }
+
+  h3 {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    margin: 2.5rem 0 0.9rem 0;
+    padding-bottom: 0.5rem;
+    background-image: linear-gradient(to right, var(--accent), transparent 35%);
+    background-size: 100% 2px;
+    background-position: bottom left;
+    background-repeat: no-repeat;
+  }
+
+  p { margin: 0.5rem 0 0.9rem; color: var(--text-secondary); }
+  b { color: var(--text-primary); font-weight: 600; }
+  i { color: var(--purple); font-style: italic; }
+
+  /* ── Bottom-line lede ───────────────────────────────── */
+  .bottom-line {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(77, 142, 255, 0.05) 100%);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    margin: 0 0 2.5rem 0;
+    font-size: 1.1rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ── Summary table ──────────────────────────────────── */
+  table.summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0 2rem 0;
+    font-size: 0.98rem;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  table.summary th {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-base);
+  }
+  table.summary td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  table.summary td.num {
+    font-family: var(--font-mono);
+    text-align: right;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
+  table.summary td code {
+    background: rgba(77, 142, 255, 0.08);
+    color: var(--accent);
+    padding: 0.12rem 0.45rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+  }
+  table.summary tr:last-child td { border-bottom: none; }
+  table.summary tr.learner td {
+    background: rgba(52, 211, 153, 0.05);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  table.summary td a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  table.summary td a:hover { border-bottom-color: var(--accent); }
+
+  /* ── Three constraints ──────────────────────────────── */
+  .constraints {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0 2rem;
+  }
+  .constraint {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem;
+    box-shadow: var(--shadow-card);
+  }
+  .constraint-n {
+    font-family: var(--font-mono);
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+    padding-top: 0.1rem;
+    min-width: 1.5rem;
+  }
+  .constraint-body { color: var(--text-secondary); font-size: 1rem; line-height: 1.55; }
+  .math {
+    font-family: var(--font-mono);
+    background: var(--bg-base);
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.92em;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  /* ── Diagnostic cards ───────────────────────────────── */
+  .diagnostic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 0.75rem 0 2rem;
+  }
+  .diagnostic-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.35rem;
+    box-shadow: var(--shadow-card);
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+  .diagnostic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -6px rgba(0,0,0,0.5), 0 1px 0 0 rgba(255,255,255,0.04) inset;
+  }
+  .diagnostic-tab {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    margin-bottom: 0.5rem;
+  }
+  .diagnostic-lead {
+    color: var(--text-primary);
+    font-size: 1.02rem;
+    font-weight: 500;
+    line-height: 1.45;
+    margin-bottom: 0.6rem;
+  }
+  .diagnostic-more {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+  }
+
+  /* ── Callout ────────────────────────────────────────── */
+  .callout {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(251, 191, 36, 0.04) 100%);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1.5rem;
+    margin: 0.75rem 0 2rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    box-shadow: var(--shadow-card);
+  }
+  .callout p { margin: 0.45rem 0; color: var(--text-secondary); }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .caveat {
+    font-size: 1rem;
+    color: var(--text-muted);
+    border-left: 2px solid var(--border-light);
+    padding-left: 1rem;
+    margin: 0.5rem 0 2rem;
+  }
+  .reading-order {
+    margin: 0.75rem 0 2rem;
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+  }
+  .reading-order li { margin: 0.4rem 0; }
+  .reading-order a { color: var(--accent); text-decoration: none; }
+  .reading-order a:hover { text-decoration: underline; }
+
+  /* ── Per-run panels ─────────────────────────────────── */
+  .run-blurb {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(77, 142, 255, 0.04) 100%);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem;
+    margin: 0.25rem 0 1.75rem;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-card);
+  }
+  .run-blurb-lead { font-size: 1.06rem; margin-bottom: 0.5rem; }
+  .run-blurb p { margin: 0; font-size: 0.98rem; line-height: 1.6; }
+
+  /* ── Stat cards ─────────────────────────────────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 0.8rem;
+    margin: 0.5rem 0 2rem 0;
+  }
+  .stat {
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1.35rem;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent);
+  }
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.45rem;
+  }
+
+  /* ── Recipe panel ───────────────────────────────────── */
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.45rem 1.25rem;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.15rem 1.4rem;
+    margin: 0.5rem 0 2rem;
+    box-shadow: var(--shadow-card);
+    font-size: 0.92rem;
+  }
+  .recipe-label {
+    font-family: var(--font-mono);
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    align-self: center;
+  }
+  .recipe-value { color: var(--text-primary); align-self: center; }
+  .recipe-value code {
+    background: rgba(77, 142, 255, 0.08);
+    color: var(--accent);
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+  }
+
+  /* ── Charts ─────────────────────────────────────────── */
+  .chart-frame {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.15rem 0.65rem;
+    margin: 0.5rem 0 1.5rem;
+    box-shadow: var(--shadow-card);
+  }
+  .chart { width: 100%; max-width: 100%; height: 380px; margin: 0; }
+  .chart-hint {
+    color: var(--text-muted);
+    font-size: 0.94rem;
+    margin: -0.4rem 0 0.6rem;
+  }
+
+  /* ── Footer ─────────────────────────────────────────── */
+  footer {
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.02em;
+  }
+  footer a { color: var(--text-muted); text-decoration: underline; }
+
+  @media (max-width: 1100px) {
+    .container { padding: 2rem 1.5rem 3rem; }
+    .report-header { grid-template-columns: 1fr; }
+    .render-meta { text-align: left; }
+    h2, .hero-title, .run-title { font-size: 1.8rem; }
+  }
+
+  /* ── Print mode (activated by ?print=1) ─────────────────── */
+  body.print-mode .tab-bar { display: none !important; }
+  body.print-mode .tab-panel {
+    display: block !important;
+    page-break-before: always;
+  }
+  body.print-mode #overview { page-break-before: auto; }
+  body.print-mode .container { max-width: 100%; padding: 1.5rem 2rem; }
+  body.print-mode .tab-panel { break-inside: avoid-page; }
+  @media print {
+    body.print-mode { background: var(--bg-base) !important; }
+    body.print-mode .chart-frame { break-inside: avoid; }
+    body.print-mode .stat,
+    body.print-mode .constraint,
+    body.print-mode .diagnostic-card,
+    body.print-mode .run-blurb,
+    body.print-mode .callout,
+    body.print-mode .bottom-line { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="report-header">
+  <div>
+    <div class="eyebrow">rlvr · demo · unified report</div>
+    <h1>RLVR on small instruct models — four runs</h1>
+    <div class="subtitle">Companion to the SC-AI Seminar talk on RLVR (April 2026) · Tom &amp; Lan Li</div>
+  </div>
+  <div class="render-meta">Rendered 2026-04-18 22:15</div>
+</header>
+
+<nav class="tab-bar">
+  <a href="#overview" class="tab" data-target="overview">Overview</a>
+  <a href="#run-1" class="tab" data-target="run-1">Run 1 · Code (OLMo)</a>
+<a href="#run-2" class="tab" data-target="run-2">Run 2 · Math (OLMo)</a>
+<a href="#run-3" class="tab" data-target="run-3">Run 3 · Math (Gemma)</a>
+<a href="#run-4" class="tab" data-target="run-4">Run 4 · Math (Gemma v2)</a>
+</nav>
+
+<script>
+const PLOT = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  plot_bgcolor: 'rgba(20,20,24,0.45)',
+  font: { color: '#c7c7d1', family: 'JetBrains Mono, ui-monospace, monospace', size: 14 },
+  xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)', linecolor: 'rgba(255,255,255,0.12)', tickfont: { size: 13 } },
+  yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)', linecolor: 'rgba(255,255,255,0.12)', tickfont: { size: 13 } },
+  margin: { l: 72, r: 24, t: 24, b: 56 },
+  showlegend: true,
+  legend: { bgcolor: 'rgba(0,0,0,0)', font: { color: '#c7c7d1', size: 13 } },
+};
+</script>
+
+
+<section id="overview" class="tab-panel">
+  <div class="eyebrow">RLVR demo · four runs · one narrative</div>
+  <h2 class="hero-title">Four RLVR runs. One that learns.</h2>
+  <p class="hero-sub">A walk through what had to go right.</p>
+
+  <div class="bottom-line">
+    <b>Bottom line:</b> RLVR training is a tough cookie. Modern instruct
+    models are already strong — adding on top requires <b>three</b>
+    variables to line up at once: baseline in the variance band, enough
+    non-dead groups, and a policy update budget that actually lets the
+    policy move. Runs 1–3 each missed one. Run 4 hit all three — and
+    the KL ceiling is near the drift zone even so.
+  </div>
+
+  <h3>Headline</h3>
+  
+<table class="summary">
+  <thead><tr>
+    <th>Run</th><th>Task</th><th>Base model</th><th>G</th>
+    <th>Baseline pass@1</th><th>Post-RLVR pass@1</th><th>Δ</th><th>KL max</th>
+  </tr></thead>
+  <tbody><tr><td><a href="#run-1">Run 1 · Code (OLMo)</a></td><td>MBPP</td><td><code>OLMo-2-1124-7B-Instruct</code></td><td class="num">4</td><td class="num">2.72%</td><td class="num">3.11%</td><td class="num" style="color:#a1a1aa;font-weight:600">+0.39pp</td><td class="num">0.0009</td></tr><tr><td><a href="#run-2">Run 2 · Math (OLMo)</a></td><td>GSM8K</td><td><code>OLMo-2-1124-7B-Instruct</code></td><td class="num">4</td><td class="num">82.64%</td><td class="num">82.11%</td><td class="num" style="color:#f87171;font-weight:600">-0.53pp</td><td class="num">0.0021</td></tr><tr><td><a href="#run-3">Run 3 · Math (Gemma)</a></td><td>GSM8K</td><td><code>gemma-2-2b-it</code></td><td class="num">8</td><td class="num">58.53%</td><td class="num">58.23%</td><td class="num" style="color:#a1a1aa;font-weight:600">-0.30pp</td><td class="num">0.0011</td></tr><tr class="learner"><td><a href="#run-4">Run 4 · Math (Gemma v2)</a></td><td>GSM8K</td><td><code>gemma-2-2b-it</code></td><td class="num">8</td><td class="num">58.53%</td><td class="num">60.35%</td><td class="num" style="color:#34d399;font-weight:600">+1.82pp</td><td class="num">0.0323</td></tr></tbody>
+</table>
+
+  <h3>The three constraints GRPO needs</h3>
+  <div class="constraints">
+    <div class="constraint">
+      <div class="constraint-n">1</div>
+      <div class="constraint-body">
+        <b>Baseline in the variance sweet spot.</b> Not so low that every
+        completion fails (Run 1: 2.7%), not so high that every completion
+        passes (Run 2: 82.6%).
+      </div>
+    </div>
+    <div class="constraint">
+      <div class="constraint-n">2</div>
+      <div class="constraint-body">
+        <b>Enough non-dead groups.</b> For baseline <i>p</i> and group size
+        <i>G</i>, the all-same share is <span class="math">p<sup>G</sup> + (1−p)<sup>G</sup></span>.
+        Empirically per-prompt difficulty clusters outcomes, so the
+        observed share is higher than the independence model predicts.
+      </div>
+    </div>
+    <div class="constraint">
+      <div class="constraint-n">3</div>
+      <div class="constraint-body">
+        <b>A policy update budget that lets the policy move.</b> Learning
+        rate, KL coefficient β, step count. Runs 1–3 all used lr=5e-6,
+        β=0.05, 200 steps — and the policy never meaningfully moved
+        (Run 3's KL max was 0.0011). Reward variance was necessary but
+        not sufficient.
+      </div>
+    </div>
+  </div>
+
+  <h3>Per-run diagnosis</h3>
+  <div class="diagnostic-grid">
+<a href="#run-1" class="diagnostic-card" style="border-left-color:#f87171">
+  <div class="diagnostic-tab">Run 1 · Code (OLMo)</div>
+  <div class="diagnostic-lead">Baseline too low (2.7%) — sparse reward, no gradient.</div>
+  <div class="diagnostic-more">Read the full run →</div>
+</a>
+<a href="#run-2" class="diagnostic-card" style="border-left-color:#f87171">
+  <div class="diagnostic-tab">Run 2 · Math (OLMo)</div>
+  <div class="diagnostic-lead">Baseline too high (82.6%) — groups saturate all-pass.</div>
+  <div class="diagnostic-more">Read the full run →</div>
+</a>
+<a href="#run-3" class="diagnostic-card" style="border-left-color:#fbbf24">
+  <div class="diagnostic-tab">Run 3 · Math (Gemma)</div>
+  <div class="diagnostic-lead">Variance fixed; update budget still capped. KL max 0.0011.</div>
+  <div class="diagnostic-more">Read the full run →</div>
+</a>
+<a href="#run-4" class="diagnostic-card" style="border-left-color:#34d399">
+  <div class="diagnostic-tab">Run 4 · Math (Gemma v2)</div>
+  <div class="diagnostic-lead">Same recipe as Run 3 with lr×4, β÷10, steps×2. +1.8pp — first signal outside noise.</div>
+  <div class="diagnostic-more">Read the full run →</div>
+</a></div>
+
+  <h3>The takeaway</h3>
+  <div class="callout">
+    <p>
+      <b>Run 4 validated the hypothesis.</b> Same model, same G, same reward
+      setup as Run 3 — only the policy update budget changed
+      (lr 4×, β ÷10, steps 2×). KL max went from 0.0011 → <b style="color:#fbbf24">0.032</b>
+      (29×). pass@1 went <b>58.53% → 60.35% (+1.82pp)</b>,
+      the first delta outside noise across all four runs.
+      <b>120 fixed, 96 regressed</b>, net
+      +24.
+    </p>
+    <p>
+      But KL max 0.032 is high enough that <b>drift is real</b> — 96 problems
+      the base model used to solve are now broken. On a single-task benchmark
+      that's still a net win; on a multi-task eval it would be the place to
+      watch for collateral damage.
+    </p>
+  </div>
+
+  <h3>Honest caveat</h3>
+  <p class="caveat">
+    Run 4's reward curve is noisy and drifts <i>slightly</i> down in the tail.
+    Per-step reward is averaged over ~16 completions (2 prompts × G=8), so
+    noise dominates the trend. The pass@1 number on 1,319 problems is the
+    smoothed signal — that's where the +1.82pp lives. Worth flagging.
+  </p>
+
+  <h3>Read the runs</h3>
+  <ul class="reading-order">
+    <li><a href="#run-4">Run 4 — Gemma/GSM8K, update budget unlocked</a> — the only run that clearly learns.</li>
+    <li><a href="#run-3">Run 3 — Gemma/GSM8K, variance band</a> — the setup that Run 4 builds on.</li>
+    <li><a href="#run-2">Run 2 — OLMo/GSM8K</a> — baseline too high.</li>
+    <li><a href="#run-1">Run 1 — OLMo/MBPP</a> — the original talk demo; baseline too low.</li>
+  </ul>
+</section>
+
+<section id="run-1" class="tab-panel">
+  <div class="eyebrow">Run 1 · MBPP · OLMo-2-7B-Instruct</div>
+  <h2 class="run-title">Code: baseline too low</h2>
+  
+<div class="run-blurb" style="border-left-color:#f87171">
+  <div class="run-blurb-lead"><b>Baseline too low (2.7%) — sparse reward, no gradient.</b></div>
+  <p>MBPP is a code-completion benchmark where OLMo-2-7B-Instruct (not code-tuned) solves only 2.7% of held-out problems. With G=4, the fraction of groups where every completion fails is (1−0.027)^4 ≈ 89%. Most optimizer steps carry no signal. Δ = +0.4pp is within noise.</p>
+</div>
+  <div class="stats"><div class="stat"><div class="stat-value" style="color:#4d8eff">2.72%</div><div class="stat-label">Baseline pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">3.11%</div><div class="stat-label">Post-RLVR pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">+0.39pp</div><div class="stat-label">Δ</div></div>
+<div class="stat"><div class="stat-value" style="color:#4d8eff">200</div><div class="stat-label">Training steps</div></div>
+<div class="stat"><div class="stat-value" style="color:#fbbf24">0.0009</div><div class="stat-label">KL max</div></div></div>
+  <h3>Recipe</h3><div class="recipe-grid"><div class="recipe-label">Base model</div><div class="recipe-value"><code>allenai/OLMo-2-1124-7B-Instruct</code></div>
+<div class="recipe-label">Generations per prompt (G)</div><div class="recipe-value"><code>4</code></div>
+<div class="recipe-label">Temperature</div><div class="recipe-value"><code>1.0</code></div>
+<div class="recipe-label">Training steps</div><div class="recipe-value"><code>200</code></div>
+<div class="recipe-label">Learning rate</div><div class="recipe-value"><code>5e-06</code></div>
+<div class="recipe-label">KL coefficient β</div><div class="recipe-value"><code>0.05</code></div>
+<div class="recipe-label">LoRA r / α</div><div class="recipe-value"><code>16 / 32</code></div>
+<div class="recipe-label">Max completion tokens</div><div class="recipe-value"><code>512</code></div>
+<div class="recipe-label">Variance band (predicted)</div><div class="recipe-value"><code>10.5% mixed-reward</code></div></div>
+  
+<h3>pass@1 on MBPP held-out (257)</h3>
+<div class="chart-frame"><div id="run-1-passat1" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-passat1', [{x: ['Baseline', 'Post-RLVR'], y: [2.72, 3.11], type: 'bar', marker: {color: ['#4d8eff', '#34d399']}, text: ['2.7%', '3.1%'], textposition: 'outside', textfont: {color: '#e4e4e7', size: 18}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'pass@1 (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward (fraction of completions with correct answer)</h3>
+<div class="chart-frame"><div id="run-1-reward" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-reward', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.075, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.125, 0.025, 0.0, 0.0, 0.0, 0.1, 0.0, 0.25, 0.0, 0.025, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0, 0.15, 0.0, 0.05, 0.025, 0.0, 0.025, 0.0, 0.025, 0.1, 0.0, 0.05, 0.05, 0.0], type: 'scatter', mode: 'lines+markers', name: 'Per-log reward', line: {color: '#4d8eff', width: 2}, marker: {size: 5, color: '#4d8eff'}, opacity: 0.55}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.075, 0.0375, 0.024999999999999998, 0.01875, 0.015, 0.0, 0.0, 0.0, 0.025, 0.03, 0.03, 0.03, 0.03, 0.025, 0.02, 0.06999999999999999, 0.06999999999999999, 0.075, 0.05500000000000001, 0.05500000000000001, 0.005, 0.005, 0.0, 0.0, 0.0, 0.01, 0.01, 0.04, 0.04, 0.05, 0.045, 0.045, 0.02, 0.02, 0.015000000000000003, 0.030000000000000006, 0.030000000000000006, 0.034999999999999996, 0.045, 0.04], type: 'scatter', mode: 'lines', name: 'Rolling mean (5)', line: {color: '#34d399', width: 3}}],
+  {...PLOT, xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Reward', range: [0, 1]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward-variance diagnostic · <code>frac_reward_zero_std</code></h3>
+<p class="chart-hint">
+  Percent of GRPO groups where all G completions got the same reward.
+  These groups have zero advantage and contribute no gradient.
+  Run average: <b style="color:#f87171">95.8%</b>.
+</p>
+<div class="chart-frame"><div id="run-1-variance" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-variance', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [90.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 80.0, 90.0, 100.0, 100.0, 100.0, 80.0, 100.0, 90.0, 100.0, 90.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 80.0, 100.0, 90.0, 100.0, 90.0, 90.0, 100.0, 90.0, 100.0, 90.0, 100.0, 100.0, 90.0, 90.0, 100.0], type: 'scatter', mode: 'lines+markers', name: 'Zero-variance', line: {color: '#f87171', width: 2}, marker: {size: 5}, fill: 'tozeroy', fillcolor: 'rgba(248,113,113,0.08)'}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Zero-variance groups (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>KL divergence from reference policy</h3>
+<p class="chart-hint">Low = trained policy stays close to base. High = drift — watch for degradation.</p>
+<div class="chart-frame"><div id="run-1-kl" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-kl', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.0002066195556835737, 0.0002760255811153911, 0.00033509263666928744, 0.0002971852525661234, 0.000377632760501001, 0.0003317869013699237, 0.0003373227424162906, 0.0002726439139223658, 0.0003891975575243123, 0.000335413365974091, 0.0003184283428709023, 0.0005651777682942338, 0.0002876845566788688, 0.0002466731824824819, 0.0003677265980513766, 0.0005797570483991876, 0.00037883208424318584, 0.0003451885870163096, 0.0002522213602787815, 0.0004266538773663342, 0.00022379484107659664, 0.00034471264225430784, 0.00031638485233997926, 0.00034646496424102225, 0.0005738856125390157, 0.0006363406020682306, 0.0004169410043687094, 0.00030561355451936835, 0.00036138230170763564, 0.0006934994031325914, 0.00046840366849210113, 0.000662667764845537, 0.0005074157088529319, 0.0004845352508709766, 0.0004940957005601376, 0.0005430517681816127, 0.0003670063946628943, 0.0009112836196436547, 0.0003996061350335367, 0.000448596641945187], type: 'scatter', mode: 'lines+markers', name: 'KL', line: {color: '#fbbf24', width: 2}, marker: {size: 5}}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'KL'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Policy loss and gradient norm</h3>
+<div class="chart-frame"><div id="run-1-loss" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-loss', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [-0.01458546370267868, 1.2426507601048797e-05, 1.6149903240147977e-05, 1.5451778017450125e-05, 1.957933563971892e-05, 1.6296411922667174e-05, 1.743139873724431e-05, 1.5891333168838175e-05, 0.034131559729576114, 0.003941790387034416, 1.616680674487725e-05, 2.52372061368078e-05, 1.5461181465070695e-05, 0.009345416724681855, 1.6890352708287536e-05, -0.04998178780078888, 1.9007276569027455e-05, 0.009211569279432296, 1.2799903925042599e-05, 2.1298736101016402e-05, 1.1058982636313885e-05, 1.808384113246575e-05, 1.5295376942958683e-05, 1.8283493409398945e-05, 2.366025873925537e-05, 0.0033299468457698824, 2.3185690224636346e-05, 1.449234550818801e-05, 1.938138739205897e-05, 0.03537157475948334, 0.04592047333717346, 3.525387146510184e-05, 2.550177450757474e-05, 2.3561654961667956e-05, 0.014221644401550293, 2.6458289357833565e-05, 1.8036439723800867e-05, -0.019196800887584686, -0.050098633766174315, 1.8086649652104826e-05], type: 'scatter', mode: 'lines', name: 'Loss', line: {color: '#4d8eff', width: 2}, yaxis: 'y'}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.0081787109375, 0.00188446044921875, 0.0010986328125, 0.00299072265625, 0.002838134765625, 0.004364013671875, 0.002166748046875, 0.00201416015625, 0.002166748046875, 0.0023193359375, 0.00148773193359375, 0.0037994384765625, 0.007110595703125, 0.003509521484375, 0.0033416748046875, 0.00836181640625, 0.004486083984375, 0.003662109375, 0.001922607421875, 0.00433349609375, 0.0020751953125, 0.00579833984375, 0.0035552978515625, 0.001983642578125, 0.00116729736328125, 0.0028533935546875, 0.00677490234375, 0.0057373046875, 0.0050048828125, 0.013427734375, 0.0081787109375, 0.0030059814453125, 0.01324462890625, 0.00592041015625, 0.00152587890625, 0.003936767578125, 0.0036163330078125, 0.0030517578125, 0.0021514892578125, 0.003692626953125], type: 'scatter', mode: 'lines', name: 'Grad norm', line: {color: '#f87171', width: 2, dash: 'dot'}, yaxis: 'y2'}],
+  {...PLOT,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Loss', side: 'left'},
+    yaxis2: {gridcolor: 'rgba(255,255,255,0.06)', title: 'Grad norm',
+             overlaying: 'y', side: 'right', color: '#f87171'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Per-problem flip analysis (257 common problems)</h3>
+<div class="chart-frame"><div id="run-1-flip" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-1-flip', [{x: ["Fixed (fail\u2192pass)", "Regressed (pass\u2192fail)", "Still passing", "Still failing"], y: [1, 0, 7, 249], type: 'bar', marker: {color: ["#34d399", "#f87171", "#4d8eff", "#a1a1aa"]}, text: [1, 0, 7, 249], textposition: 'outside', textfont: {color: '#e4e4e7', size: 15}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'Problems'}},
+  {displayModeBar: false, responsive: true});
+</script>
+</section>
+
+<section id="run-2" class="tab-panel">
+  <div class="eyebrow">Run 2 · GSM8K · OLMo-2-7B-Instruct</div>
+  <h2 class="run-title">Math on OLMo: baseline too high</h2>
+  
+<div class="run-blurb" style="border-left-color:#f87171">
+  <div class="run-blurb-lead"><b>Baseline too high (82.6%) — groups saturate all-pass.</b></div>
+  <p>Same base model, same recipe, different task. GSM8K math is a sweet spot for OLMo-2&#x27;s Tulu 3 fine-tune, so ~83% of completions pass — meaning most groups are all-pass, reward variance collapses, and the advantage term is zero most of the time. Δ = −0.5pp is within noise.</p>
+</div>
+  <div class="stats"><div class="stat"><div class="stat-value" style="color:#4d8eff">82.64%</div><div class="stat-label">Baseline pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">82.11%</div><div class="stat-label">Post-RLVR pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#f87171">-0.53pp</div><div class="stat-label">Δ</div></div>
+<div class="stat"><div class="stat-value" style="color:#4d8eff">200</div><div class="stat-label">Training steps</div></div>
+<div class="stat"><div class="stat-value" style="color:#fbbf24">0.0021</div><div class="stat-label">KL max</div></div></div>
+  <h3>Recipe</h3><div class="recipe-grid"><div class="recipe-label">Base model</div><div class="recipe-value"><code>allenai/OLMo-2-1124-7B-Instruct</code></div>
+<div class="recipe-label">Generations per prompt (G)</div><div class="recipe-value"><code>4</code></div>
+<div class="recipe-label">Temperature</div><div class="recipe-value"><code>?</code></div>
+<div class="recipe-label">Training steps</div><div class="recipe-value"><code>200</code></div>
+<div class="recipe-label">Learning rate</div><div class="recipe-value"><code>5e-06</code></div>
+<div class="recipe-label">KL coefficient β</div><div class="recipe-value"><code>0.05</code></div>
+<div class="recipe-label">LoRA r / α</div><div class="recipe-value"><code>16 / 32</code></div>
+<div class="recipe-label">Max completion tokens</div><div class="recipe-value"><code>512</code></div>
+<div class="recipe-label">Variance band (predicted)</div><div class="recipe-value"><code>53.3% mixed-reward</code></div></div>
+  
+<h3>pass@1 on openai/gsm8k test (1,319)</h3>
+<div class="chart-frame"><div id="run-2-passat1" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-passat1', [{x: ['Baseline', 'Post-RLVR'], y: [82.64, 82.11], type: 'bar', marker: {color: ['#4d8eff', '#34d399']}, text: ['82.6%', '82.1%'], textposition: 'outside', textfont: {color: '#e4e4e7', size: 18}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'pass@1 (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward (fraction of completions with correct answer)</h3>
+<div class="chart-frame"><div id="run-2-reward" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-reward', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.85, 0.95, 0.975, 0.925, 0.85, 0.8, 0.9, 0.875, 0.9, 0.9, 0.875, 0.875, 0.9, 0.95, 0.9, 0.875, 0.75, 0.75, 0.75, 0.975, 0.8, 0.775, 0.85, 0.925, 0.8, 1.0, 0.975, 0.925, 0.9, 0.975, 0.975, 0.925, 0.875, 0.975, 0.925, 0.875, 1.0, 0.65, 0.8, 0.75], type: 'scatter', mode: 'lines+markers', name: 'Per-log reward', line: {color: '#4d8eff', width: 2}, marker: {size: 5, color: '#4d8eff'}, opacity: 0.55}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.85, 0.8999999999999999, 0.9249999999999999, 0.925, 0.9099999999999999, 0.9, 0.89, 0.8699999999999999, 0.865, 0.875, 0.8899999999999999, 0.885, 0.89, 0.9, 0.9, 0.9, 0.875, 0.845, 0.805, 0.82, 0.805, 0.8100000000000002, 0.8300000000000001, 0.865, 0.8300000000000001, 0.8699999999999999, 0.9099999999999999, 0.925, 0.9200000000000002, 0.9550000000000001, 0.95, 0.9400000000000001, 0.93, 0.945, 0.9349999999999999, 0.915, 0.93, 0.885, 0.85, 0.8150000000000001], type: 'scatter', mode: 'lines', name: 'Rolling mean (5)', line: {color: '#34d399', width: 3}}],
+  {...PLOT, xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Reward', range: [0, 1]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward-variance diagnostic · <code>frac_reward_zero_std</code></h3>
+<p class="chart-hint">
+  Percent of GRPO groups where all G completions got the same reward.
+  These groups have zero advantage and contribute no gradient.
+  Run average: <b style="color:#f87171">80.5%</b>.
+</p>
+<div class="chart-frame"><div id="run-2-variance" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-variance', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [80.0, 90.0, 90.0, 80.0, 80.0, 40.0, 80.0, 80.0, 70.0, 80.0, 70.0, 70.0, 100.0, 80.0, 80.0, 90.0, 90.0, 70.0, 60.0, 90.0, 80.0, 50.0, 90.0, 80.0, 70.0, 100.0, 90.0, 90.0, 70.0, 90.0, 90.0, 90.0, 80.0, 90.0, 80.0, 90.0, 100.0, 80.0, 60.0, 80.0], type: 'scatter', mode: 'lines+markers', name: 'Zero-variance', line: {color: '#f87171', width: 2}, marker: {size: 5}, fill: 'tozeroy', fillcolor: 'rgba(248,113,113,0.08)'}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Zero-variance groups (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>KL divergence from reference policy</h3>
+<p class="chart-hint">Low = trained policy stays close to base. High = drift — watch for degradation.</p>
+<div class="chart-frame"><div id="run-2-kl" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-kl', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.0, 0.0001008645813271869, 0.00011386292426323053, 0.00021952419010631274, 0.00013548251881729813, 0.00019444399658823385, 0.00011692939951899462, 0.0001484290180087555, 0.00024043204757617787, 0.00010760182558442467, 0.0002460654446622357, 0.00016840541211422534, 0.00013499455890269018, 0.00029260014198371207, 0.0003155535814585164, 0.0002768147347524064, 0.0012686221190961078, 0.0004957931079843548, 0.0007015879935352131, 0.0003241953905671835, 0.0010319014691049233, 0.0008686588407726958, 0.00025712445603858213, 0.000638094561509206, 0.0010578860048553907, 0.00017714861860440578, 0.000640910988295218, 0.0012062973786669319, 0.0014849466417217628, 0.0004394971620058641, 0.0004925634930259548, 0.002089990594322444, 0.00011577406748983777, 0.00011042404548788909, 0.00018821601988747716, 0.0004515375883784145, 0.0010031696161604486, 0.0004339551120210672, 0.00031088835567061324, 0.00033988220457104035], type: 'scatter', mode: 'lines+markers', name: 'KL', line: {color: '#fbbf24', width: 2}, marker: {size: 5}}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'KL'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Policy loss and gradient norm</h3>
+<div class="chart-frame"><div id="run-2-loss" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-loss', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [-0.008882655203342438, -0.008812429010868072, -0.0017198650166392326, -0.0025001872330904008, -0.0067780807614326475, -0.02336636036634445, -0.000866368692368269, -0.05218305587768555, 0.03447820246219635, 0.04884693622589111, 0.02512510120868683, 0.05581385493278503, 6.720289820805192e-06, 0.01423160284757614, -0.03263629376888275, -0.0011894186027348042, 0.008596468716859818, -0.026132118701934815, 0.057818299531936644, -0.004908353462815285, -0.004512201249599457, -0.04325421452522278, -0.01382473111152649, -0.013363206386566162, 0.02264036238193512, 8.81441737874411e-06, -0.002709697186946869, -0.01760534942150116, 0.03667005300521851, -0.0057088911533355715, 0.004873726144433021, 0.0036738265305757524, -0.0033752072602510454, -0.004380335286259651, -0.015502864122390747, 0.004960127547383309, 4.8314887681044635e-05, 0.0007153498940169811, -0.0015998750925064087, -0.007491841912269592], type: 'scatter', mode: 'lines', name: 'Loss', line: {color: '#4d8eff', width: 2}, yaxis: 'y'}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.2373046875, 0.0013885498046875, 0.00080108642578125, 0.00677490234375, 0.0027313232421875, 0.314453125, 0.00151824951171875, 0.0008544921875, 0.00439453125, 0.2216796875, 0.00135040283203125, 0.263671875, 0.00052642822265625, 0.01007080078125, 0.294921875, 0.003265380859375, 0.0006866455078125, 0.1630859375, 0.2294921875, 0.0277099609375, 0.00118255615234375, 0.2294921875, 0.000400543212890625, 0.373046875, 0.25390625, 0.00141143798828125, 0.000926971435546875, 0.0155029296875, 0.00396728515625, 0.0040283203125, 0.006134033203125, 0.0013885498046875, 0.000965118408203125, 0.00171661376953125, 0.000701904296875, 0.04345703125, 0.0078125, 0.1083984375, 0.248046875, 0.00390625], type: 'scatter', mode: 'lines', name: 'Grad norm', line: {color: '#f87171', width: 2, dash: 'dot'}, yaxis: 'y2'}],
+  {...PLOT,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Loss', side: 'left'},
+    yaxis2: {gridcolor: 'rgba(255,255,255,0.06)', title: 'Grad norm',
+             overlaying: 'y', side: 'right', color: '#f87171'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Per-problem flip analysis (1319 common problems)</h3>
+<div class="chart-frame"><div id="run-2-flip" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-2-flip', [{x: ["Fixed (fail\u2192pass)", "Regressed (pass\u2192fail)", "Still passing", "Still failing"], y: [50, 57, 1033, 179], type: 'bar', marker: {color: ["#34d399", "#f87171", "#4d8eff", "#a1a1aa"]}, text: [50, 57, 1033, 179], textposition: 'outside', textfont: {color: '#e4e4e7', size: 15}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'Problems'}},
+  {displayModeBar: false, responsive: true});
+</script>
+</section>
+
+<section id="run-3" class="tab-panel">
+  <div class="eyebrow">Run 3 · GSM8K · Gemma-2-2B-IT · G=8</div>
+  <h2 class="run-title">Variance fixed · update budget still capped</h2>
+  
+<div class="run-blurb" style="border-left-color:#fbbf24">
+  <div class="run-blurb-lead"><b>Variance fixed; update budget still capped. KL max 0.0011.</b></div>
+  <p>Swapped to Gemma-2-2B-IT (GSM8K baseline 58.5%, smack in the middle), bumped G=8 and temperature 1.0. Observed zero-variance share fell from ~80% (OLMo) to ~52% — about 2.4× more signal per step. But with lr=5e-6, β=0.05, 200 steps, the policy barely moved: KL max 0.0011. Δ = −0.3pp, still within noise.</p>
+</div>
+  <div class="stats"><div class="stat"><div class="stat-value" style="color:#4d8eff">58.53%</div><div class="stat-label">Baseline pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">58.23%</div><div class="stat-label">Post-RLVR pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#f87171">-0.30pp</div><div class="stat-label">Δ</div></div>
+<div class="stat"><div class="stat-value" style="color:#4d8eff">200</div><div class="stat-label">Training steps</div></div>
+<div class="stat"><div class="stat-value" style="color:#fbbf24">0.0011</div><div class="stat-label">KL max</div></div></div>
+  <h3>Recipe</h3><div class="recipe-grid"><div class="recipe-label">Base model</div><div class="recipe-value"><code>google/gemma-2-2b-it</code></div>
+<div class="recipe-label">Generations per prompt (G)</div><div class="recipe-value"><code>8</code></div>
+<div class="recipe-label">Temperature</div><div class="recipe-value"><code>1.0</code></div>
+<div class="recipe-label">Training steps</div><div class="recipe-value"><code>200</code></div>
+<div class="recipe-label">Learning rate</div><div class="recipe-value"><code>5e-06</code></div>
+<div class="recipe-label">KL coefficient β</div><div class="recipe-value"><code>0.05</code></div>
+<div class="recipe-label">LoRA r / α</div><div class="recipe-value"><code>16 / 32</code></div>
+<div class="recipe-label">Max completion tokens</div><div class="recipe-value"><code>512</code></div>
+<div class="recipe-label">Variance band (predicted)</div><div class="recipe-value"><code>98.5% mixed-reward</code></div></div>
+  
+<h3>pass@1 on openai/gsm8k test (1,319)</h3>
+<div class="chart-frame"><div id="run-3-passat1" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-passat1', [{x: ['Baseline', 'Post-RLVR'], y: [58.53, 58.23], type: 'bar', marker: {color: ['#4d8eff', '#34d399']}, text: ['58.5%', '58.2%'], textposition: 'outside', textfont: {color: '#e4e4e7', size: 18}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'pass@1 (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward (fraction of completions with correct answer)</h3>
+<div class="chart-frame"><div id="run-3-reward" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-reward', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.4, 0.575, 0.55, 0.9, 0.55, 0.55, 0.875, 0.55, 0.5, 0.7, 0.55, 0.075, 0.5, 0.675, 0.475, 0.4, 0.7, 0.5, 0.75, 0.425, 0.7, 0.675, 0.55, 0.425, 0.575, 0.35, 0.6, 0.5, 0.875, 0.6, 0.45, 0.525, 0.55, 0.525, 0.55, 0.9, 0.4, 0.525, 0.4, 0.725], type: 'scatter', mode: 'lines+markers', name: 'Per-log reward', line: {color: '#4d8eff', width: 2}, marker: {size: 5, color: '#4d8eff'}, opacity: 0.55}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.4, 0.4875, 0.5083333333333333, 0.60625, 0.595, 0.625, 0.6849999999999999, 0.6849999999999999, 0.6050000000000001, 0.635, 0.635, 0.475, 0.465, 0.5, 0.45499999999999996, 0.425, 0.55, 0.55, 0.5650000000000001, 0.5549999999999999, 0.615, 0.61, 0.6199999999999999, 0.5549999999999999, 0.585, 0.515, 0.5, 0.49000000000000005, 0.58, 0.5850000000000001, 0.6050000000000001, 0.5900000000000001, 0.6, 0.53, 0.5200000000000001, 0.6100000000000001, 0.5850000000000001, 0.58, 0.5549999999999999, 0.5900000000000001], type: 'scatter', mode: 'lines', name: 'Rolling mean (5)', line: {color: '#34d399', width: 3}}],
+  {...PLOT, xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Reward', range: [0, 1]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward-variance diagnostic · <code>frac_reward_zero_std</code></h3>
+<p class="chart-hint">
+  Percent of GRPO groups where all G completions got the same reward.
+  These groups have zero advantage and contribute no gradient.
+  Run average: <b style="color:#f87171">52.5%</b>.
+</p>
+<div class="chart-frame"><div id="run-3-variance" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-variance', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [40.0, 80.0, 60.0, 60.0, 80.0, 40.0, 60.0, 40.0, 40.0, 20.0, 20.0, 60.0, 20.0, 60.0, 80.0, 20.0, 60.0, 60.0, 80.0, 60.0, 80.0, 40.0, 80.0, 20.0, 20.0, 80.0, 60.0, 40.0, 40.0, 60.0, 20.0, 60.0, 60.0, 60.0, 60.0, 80.0, 60.0, 60.0, 40.0, 40.0], type: 'scatter', mode: 'lines+markers', name: 'Zero-variance', line: {color: '#f87171', width: 2}, marker: {size: 5}, fill: 'tozeroy', fillcolor: 'rgba(248,113,113,0.08)'}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Zero-variance groups (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>KL divergence from reference policy</h3>
+<p class="chart-hint">Low = trained policy stays close to base. High = drift — watch for degradation.</p>
+<div class="chart-frame"><div id="run-3-kl" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-kl', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.00023020030930638314, 0.000327613037370611, 0.0002668187444214709, 0.0001653585299209226, 0.00029898507782490926, 0.00028408228245098145, 0.0003240504738641903, 0.00036933497904101387, 0.00035019139031646775, 0.0003091007878538221, 0.00035035214241361243, 0.0004533383034868166, 0.0003582759731216356, 0.0003399595501832664, 0.00045455987565219403, 0.0005263409140752629, 0.00047534215409541505, 0.0005519746628124267, 0.0006967881432501599, 0.0005461781853227876, 0.0005336405156413093, 0.0010597368469461798, 0.0006440044802729971, 0.0007243811327498406, 0.0007096541405189783, 0.0007459058528183959, 0.0009787643299205228, 0.0008764669764786959, 0.000900772979366593, 0.00102617917873431, 0.0010281813621986658, 0.0010221340460702776, 0.0009734975406900048, 0.0010528166312724352, 0.0009172930193017236, 0.00080862762988545, 0.0009497205261141062, 0.00094949851045385, 0.0010220237309113145, 0.0008547774923499674], type: 'scatter', mode: 'lines+markers', name: 'KL', line: {color: '#fbbf24', width: 2}, marker: {size: 5}}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'KL'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Policy loss and gradient norm</h3>
+<div class="chart-frame"><div id="run-3-loss" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-loss', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [-0.010119907557964325, -0.014391957223415375, -0.02137046754360199, 0.03308936357498169, -0.03320610225200653, 0.013213318586349488, -0.0016707301139831543, -0.01108866035938263, -0.002486880496144295, 0.004369637742638588, -0.019004440307617186, -0.003027745336294174, 0.008865916728973388, -0.0015590190887451172, -0.023746982216835022, -0.07274875640869141, 0.010175834596157073, 0.024468983709812164, -0.017362986505031586, -0.0045298576354980465, 0.005110671371221542, 0.07485136389732361, -0.014025183022022247, 0.03188028335571289, -0.02771119475364685, 0.0008087276481091976, -0.004443467035889626, -0.01952003538608551, 0.010013632476329803, -0.031238815188407897, 0.008557368814945222, 0.006401470303535462, -0.02139191925525665, -0.0007771280594170094, -0.014580172300338746, 0.005612345039844513, 0.0009135246276855469, -0.0023192839697003366, -0.009580475091934205, 0.033294263482093814], type: 'scatter', mode: 'lines', name: 'Loss', line: {color: '#4d8eff', width: 2}, yaxis: 'y'}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200], y: [0.0018768310546875, 0.0050048828125, 0.003631591796875, 0.82421875, 0.003814697265625, 0.46875, 1.4296875, 0.734375, 0.002655029296875, 0.006011962890625, 0.4921875, 0.005401611328125, 0.50390625, 0.55859375, 0.005645751953125, 0.0050048828125, 0.6875, 0.0089111328125, 0.00823974609375, 0.74609375, 0.003662109375, 0.00872802734375, 0.004302978515625, 0.69921875, 0.85546875, 0.0048828125, 0.00518798828125, 0.017333984375, 0.734375, 0.004608154296875, 0.51171875, 0.004486083984375, 0.64453125, 0.01177978515625, 1.0859375, 0.01202392578125, 0.008544921875, 0.0027313232421875, 0.67578125, 0.006683349609375], type: 'scatter', mode: 'lines', name: 'Grad norm', line: {color: '#f87171', width: 2, dash: 'dot'}, yaxis: 'y2'}],
+  {...PLOT,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Loss', side: 'left'},
+    yaxis2: {gridcolor: 'rgba(255,255,255,0.06)', title: 'Grad norm',
+             overlaying: 'y', side: 'right', color: '#f87171'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Per-problem flip analysis (1319 common problems)</h3>
+<div class="chart-frame"><div id="run-3-flip" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-3-flip', [{x: ["Fixed (fail\u2192pass)", "Regressed (pass\u2192fail)", "Still passing", "Still failing"], y: [74, 78, 694, 473], type: 'bar', marker: {color: ["#34d399", "#f87171", "#4d8eff", "#a1a1aa"]}, text: [74, 78, 694, 473], textposition: 'outside', textfont: {color: '#e4e4e7', size: 15}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'Problems'}},
+  {displayModeBar: false, responsive: true});
+</script>
+</section>
+
+<section id="run-4" class="tab-panel">
+  <div class="eyebrow">Run 4 · GSM8K · Gemma-2-2B-IT · unlocked budget</div>
+  <h2 class="run-title">The one that learns</h2>
+  
+<div class="run-blurb" style="border-left-color:#34d399">
+  <div class="run-blurb-lead"><b>Same recipe as Run 3 with lr×4, β÷10, steps×2. +1.8pp — first signal outside noise.</b></div>
+  <p>Identical model, G, and reward setup as Run 3 — the only changes are to the policy update budget: lr=2e-5 (4×), β=0.005 (10× smaller), 400 steps (2×). KL max jumped to 0.032 — 29× Run 3&#x27;s ceiling. pass@1 went 58.53% → 60.35%. 120 problems fixed, 96 regressed, net +24.</p>
+</div>
+  <div class="stats"><div class="stat"><div class="stat-value" style="color:#4d8eff">58.53%</div><div class="stat-label">Baseline pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">60.35%</div><div class="stat-label">Post-RLVR pass@1</div></div>
+<div class="stat"><div class="stat-value" style="color:#34d399">+1.82pp</div><div class="stat-label">Δ</div></div>
+<div class="stat"><div class="stat-value" style="color:#4d8eff">400</div><div class="stat-label">Training steps</div></div>
+<div class="stat"><div class="stat-value" style="color:#fbbf24">0.0323</div><div class="stat-label">KL max</div></div></div>
+  <h3>Recipe</h3><div class="recipe-grid"><div class="recipe-label">Base model</div><div class="recipe-value"><code>google/gemma-2-2b-it</code></div>
+<div class="recipe-label">Generations per prompt (G)</div><div class="recipe-value"><code>8</code></div>
+<div class="recipe-label">Temperature</div><div class="recipe-value"><code>1.0</code></div>
+<div class="recipe-label">Training steps</div><div class="recipe-value"><code>400</code></div>
+<div class="recipe-label">Learning rate</div><div class="recipe-value"><code>2e-05</code></div>
+<div class="recipe-label">KL coefficient β</div><div class="recipe-value"><code>0.005</code></div>
+<div class="recipe-label">LoRA r / α</div><div class="recipe-value"><code>16 / 32</code></div>
+<div class="recipe-label">Max completion tokens</div><div class="recipe-value"><code>320</code></div>
+<div class="recipe-label">Variance band (predicted)</div><div class="recipe-value"><code>98.5% mixed-reward</code></div></div>
+  
+<h3>pass@1 on openai/gsm8k test (1,319)</h3>
+<div class="chart-frame"><div id="run-4-passat1" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-passat1', [{x: ['Baseline', 'Post-RLVR'], y: [58.53, 60.35], type: 'bar', marker: {color: ['#4d8eff', '#34d399']}, text: ['58.5%', '60.3%'], textposition: 'outside', textfont: {color: '#e4e4e7', size: 18}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'pass@1 (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward (fraction of completions with correct answer)</h3>
+<div class="chart-frame"><div id="run-4-reward" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-reward', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [0.5, 0.6625, 0.575, 0.75, 0.6375, 0.3875, 0.5375, 0.5125, 0.6125, 0.6375, 0.625, 0.5, 0.4375, 0.5125, 0.675, 0.5, 0.5125, 0.7625, 0.5125, 0.475, 0.6625, 0.575, 0.6375, 0.675, 0.5, 0.9375, 0.725, 0.65, 0.775, 0.4125, 0.575, 0.4375, 0.4125, 0.65, 0.825, 0.4875, 0.8375, 0.6125, 0.6375, 0.5, 0.575, 0.8375, 0.5, 0.4, 0.5, 0.525, 0.55, 0.5875, 0.675, 0.5875, 0.425, 0.5375, 0.7875, 0.575, 0.6375, 0.6625, 0.45, 0.8875, 0.4875, 0.675, 0.525, 0.7, 0.5875, 0.3375, 0.5875, 0.675, 0.5875, 0.3875, 0.7125, 0.425, 0.425, 0.6375, 0.6625, 0.55, 0.5625, 0.3625, 0.275, 0.7125, 0.35, 0.6125], type: 'scatter', mode: 'lines+markers', name: 'Per-log reward', line: {color: '#4d8eff', width: 2}, marker: {size: 5, color: '#4d8eff'}, opacity: 0.55}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [0.5, 0.58125, 0.5791666666666667, 0.621875, 0.625, 0.6025, 0.5775, 0.5650000000000001, 0.5375, 0.5375, 0.585, 0.5775, 0.5625, 0.5425000000000001, 0.55, 0.525, 0.5275000000000001, 0.5925, 0.5925, 0.5525, 0.585, 0.5974999999999999, 0.5725, 0.6049999999999999, 0.61, 0.665, 0.6950000000000001, 0.6975, 0.7175, 0.7, 0.6275000000000001, 0.57, 0.5225000000000001, 0.49749999999999994, 0.5799999999999998, 0.5625, 0.6425, 0.6825000000000001, 0.68, 0.615, 0.6325000000000001, 0.6325000000000001, 0.61, 0.5625, 0.5625, 0.5525, 0.49499999999999994, 0.5125, 0.5675000000000001, 0.5850000000000001, 0.5650000000000001, 0.5625, 0.6025, 0.5824999999999999, 0.5925, 0.6399999999999999, 0.6224999999999999, 0.6425000000000001, 0.6249999999999999, 0.6325, 0.605, 0.6549999999999999, 0.595, 0.5650000000000001, 0.5475, 0.5775, 0.5549999999999999, 0.515, 0.5900000000000001, 0.5575, 0.5075, 0.5175000000000001, 0.5725, 0.54, 0.5675000000000001, 0.5549999999999999, 0.48249999999999993, 0.4925, 0.4525, 0.4625], type: 'scatter', mode: 'lines', name: 'Rolling mean (5)', line: {color: '#34d399', width: 3}}],
+  {...PLOT, xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Reward', range: [0, 1]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Reward-variance diagnostic · <code>frac_reward_zero_std</code></h3>
+<p class="chart-hint">
+  Percent of GRPO groups where all G completions got the same reward.
+  These groups have zero advantage and contribute no gradient.
+  Run average: <b style="color:#f87171">52.2%</b>.
+</p>
+<div class="chart-frame"><div id="run-4-variance" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-variance', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [70.0, 60.0, 40.0, 60.0, 40.0, 30.0, 50.0, 30.0, 50.0, 50.0, 60.0, 60.0, 40.0, 50.0, 30.0, 60.0, 50.0, 60.0, 40.0, 20.0, 60.0, 50.0, 30.0, 40.0, 40.0, 70.0, 40.0, 70.0, 40.0, 70.0, 50.0, 80.0, 70.0, 70.0, 70.0, 30.0, 70.0, 50.0, 70.0, 50.0, 40.0, 60.0, 20.0, 70.0, 30.0, 50.0, 80.0, 70.0, 50.0, 50.0, 40.0, 60.0, 50.0, 70.0, 50.0, 50.0, 60.0, 40.0, 60.0, 70.0, 50.0, 100.0, 40.0, 80.0, 50.0, 60.0, 50.0, 50.0, 70.0, 50.0, 70.0, 30.0, 40.0, 40.0, 50.0, 40.0, 60.0, 50.0, 20.0, 40.0], type: 'scatter', mode: 'lines+markers', name: 'Zero-variance', line: {color: '#f87171', width: 2}, marker: {size: 5}, fill: 'tozeroy', fillcolor: 'rgba(248,113,113,0.08)'}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Zero-variance groups (%)', range: [0, 100]}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>KL divergence from reference policy</h3>
+<p class="chart-hint">Low = trained policy stays close to base. High = drift — watch for degradation.</p>
+<div class="chart-frame"><div id="run-4-kl" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-kl', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [0.0002335085126105696, 0.00026268625078955664, 0.0002703626509173773, 0.00025272167258663105, 0.0003735526435775682, 0.00048184788320213554, 0.0006115026073530317, 0.0012956894526723773, 0.001439640240278095, 0.002510872529819608, 0.0055334257893264295, 0.004180314624682069, 0.006430720724165439, 0.008059767889790237, 0.007752735493704676, 0.009435581904836, 0.012410428933799266, 0.013269004225730897, 0.010956248035654426, 0.012500331038609147, 0.01134653277695179, 0.012581664230674505, 0.012730989884585143, 0.01109486622735858, 0.014828380011022092, 0.01641515577211976, 0.01520503992214799, 0.015775872860103846, 0.01642656568437815, 0.01741960309445858, 0.01856708051636815, 0.019123400375247002, 0.016555397491902112, 0.018606329523026943, 0.022735707368701695, 0.0191725367680192, 0.01976123871281743, 0.019492889940738677, 0.02084622085094452, 0.019352847803384067, 0.027736248448491096, 0.025977248325943947, 0.021919846720993518, 0.02352137314155698, 0.021476759016513823, 0.025848641619086267, 0.02526909448206425, 0.022862373292446135, 0.025077886041253807, 0.02401215173304081, 0.01977190300822258, 0.02520937528461218, 0.027350770123302937, 0.02350847590714693, 0.024697148241102695, 0.025418950989842416, 0.024336338229477405, 0.032299653813242915, 0.02457752600312233, 0.025294123403728008, 0.025147929042577743, 0.029255017824470996, 0.02121826047077775, 0.02417477872222662, 0.03184511233121157, 0.024320740438997745, 0.026969659607857466, 0.026091980934143066, 0.027471083030104638, 0.022687453590333462, 0.026871437765657903, 0.026708453334867953, 0.03147782329469919, 0.022944268118590117, 0.02260186243802309, 0.025375368259847163, 0.03137654475867748, 0.02378546092659235, 0.025779476575553417, 0.023459894489496945], type: 'scatter', mode: 'lines+markers', name: 'KL', line: {color: '#fbbf24', width: 2}, marker: {size: 5}}],
+  {...PLOT, showlegend: false,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'KL'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Policy loss and gradient norm</h3>
+<div class="chart-frame"><div id="run-4-loss" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-loss', [{x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [0.004462561756372452, 0.01868280619382858, -0.02290104627609253, 0.00522671677172184, 0.0017266809940338136, 0.006790752708911896, 0.017450392246246338, 0.002288392186164856, 0.003951887786388397, 0.004120032489299774, 0.02343662679195404, 0.004841074347496033, -0.0004093378782272339, -0.0015968918800354005, 0.020601773262023927, 0.005113921314477921, 0.001496759057044983, 0.019799955189228058, 0.013926102221012116, 0.023222030699253084, -0.025212234258651732, 0.012995949387550354, 0.008511388301849365, 0.009243687987327576, 0.02416604906320572, 0.007813503593206405, 0.014005394279956817, 0.0004299007821828127, 0.02913801372051239, 0.02425934374332428, -0.03486523926258087, 0.0014518138021230697, 0.023073092103004456, -0.025846770405769347, 0.0172500342130661, 0.04685165584087372, 0.006806904077529907, 0.017572540044784545, 0.0011985749006271362, 0.028274357318878174, 0.02912256121635437, 0.023841410875320435, 0.033154428005218506, 0.008898575603961945, 0.03822949826717377, 0.020154494047164916, 0.01530316323041916, 0.05446606278419495, 0.022254061698913575, 0.02655397355556488, 0.03214065730571747, 0.02115817666053772, 0.025506386160850526, -0.01350388526916504, 0.019238209724426268, 0.029049229621887208, 0.008412905037403107, -0.0038028977811336516, 0.026864099502563476, -0.0007217675447463989, -0.02466357797384262, 0.00014632913516834378, 0.019313415884971617, 0.003871312364935875, -0.009310877323150635, -0.0007437495514750481, -0.028768667578697206, 0.02144872546195984, -0.010701274871826172, -0.010018733143806458, 0.001367385871708393, 0.060163503885269164, 0.003173203766345978, -0.0015724435448646545, 0.0006426645442843438, -0.0004602007567882538, -0.016537068784236907, -0.016196712851524353, 0.004655540734529495, 0.02624737024307251], type: 'scatter', mode: 'lines', name: 'Loss', line: {color: '#4d8eff', width: 2}, yaxis: 'y'}, {x: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335, 340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400], y: [0.0001392364501953125, 0.50390625, 0.359375, 0.53125, 0.44921875, 0.30859375, 0.404296875, 0.58984375, 0.38671875, 0.54296875, 0.6875, 0.447265625, 0.5234375, 0.6328125, 0.53125, 0.00136566162109375, 0.359375, 0.431640625, 0.42578125, 0.451171875, 0.005645751953125, 0.455078125, 0.4296875, 0.296875, 0.3515625, 0.0026702880859375, 0.005218505859375, 0.002166748046875, 0.37890625, 0.443359375, 0.95703125, 0.0038604736328125, 0.376953125, 0.83984375, 0.002532958984375, 0.5703125, 0.52734375, 0.33984375, 0.265625, 0.001983642578125, 0.4375, 0.984375, 0.392578125, 0.322265625, 0.5234375, 0.0025482177734375, 0.271484375, 0.007415771484375, 0.005462646484375, 0.6484375, 0.1943359375, 0.30078125, 0.5703125, 0.003173828125, 0.00341796875, 0.0023193359375, 0.423828125, 0.6171875, 0.5390625, 0.345703125, 0.0027618408203125, 0.0030975341796875, 0.478515625, 0.326171875, 0.451171875, 0.44921875, 0.3671875, 0.3125, 0.52734375, 0.66796875, 0.00433349609375, 0.58203125, 0.00885009765625, 0.2333984375, 0.396484375, 0.54296875, 0.37109375, 0.93359375, 0.52734375, 0.0025482177734375], type: 'scatter', mode: 'lines', name: 'Grad norm', line: {color: '#f87171', width: 2, dash: 'dot'}, yaxis: 'y2'}],
+  {...PLOT,
+    xaxis: {...PLOT.xaxis, title: 'Training step'},
+    yaxis: {...PLOT.yaxis, title: 'Loss', side: 'left'},
+    yaxis2: {gridcolor: 'rgba(255,255,255,0.06)', title: 'Grad norm',
+             overlaying: 'y', side: 'right', color: '#f87171'}},
+  {displayModeBar: false, responsive: true});
+</script>
+  
+<h3>Per-problem flip analysis (1319 common problems)</h3>
+<div class="chart-frame"><div id="run-4-flip" class="chart"></div></div>
+<script>
+Plotly.newPlot('run-4-flip', [{x: ["Fixed (fail\u2192pass)", "Regressed (pass\u2192fail)", "Still passing", "Still failing"], y: [120, 96, 676, 427], type: 'bar', marker: {color: ["#34d399", "#f87171", "#4d8eff", "#a1a1aa"]}, text: [120, 96, 676, 427], textposition: 'outside', textfont: {color: '#e4e4e7', size: 15}}],
+  {...PLOT, showlegend: false,
+    yaxis: {...PLOT.yaxis, title: 'Problems'}},
+  {displayModeBar: false, responsive: true});
+</script>
+</section>
+
+<footer>
+  Generated by <code>make_unified_report.py</code> ·
+  <a href="https://github.com/tjuzek/rlvr-presentation/tree/main/demo">github.com/tjuzek/rlvr-presentation/tree/main/demo</a>
+</footer>
+
+</div>
+
+<script>
+(function() {
+  const params = new URLSearchParams(location.search);
+  const isPrint = params.has('print');
+
+  if (isPrint) {
+    document.body.classList.add('print-mode');
+    // All panels now visible via CSS — resize every Plotly chart on the page.
+    function resizeAll() {
+      document.querySelectorAll('.js-plotly-plot').forEach(el => {
+        try { Plotly.Plots.resize(el); } catch (e) {}
+      });
+    }
+    window.addEventListener('load', () => {
+      resizeAll();
+      // Second pass after layout settles — Plotly sometimes needs one.
+      setTimeout(resizeAll, 300);
+    });
+    return;
+  }
+
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function show(slug) {
+    if (!slug || !document.getElementById(slug)) slug = 'overview';
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.target === slug));
+    panels.forEach(p => p.classList.toggle('active', p.id === slug));
+    // Plotly charts rendered in hidden panels have 0 dims; resize on display.
+    const panel = document.getElementById(slug);
+    if (panel) {
+      panel.querySelectorAll('.js-plotly-plot').forEach(el => {
+        try { Plotly.Plots.resize(el); } catch (e) {}
+      });
+    }
+    // Keep the URL hash in sync without re-triggering hashchange.
+    if (location.hash.slice(1) !== slug) {
+      history.replaceState(null, '', '#' + slug);
+    }
+  }
+
+  window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+  window.addEventListener('load', () => show(location.hash.slice(1) || 'overview'));
+  tabs.forEach(t => t.addEventListener('click', ev => {
+    ev.preventDefault();
+    show(t.dataset.target);
+  }));
+})();
+</script>
+</body>
+</html>

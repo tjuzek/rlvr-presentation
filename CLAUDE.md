@@ -13,11 +13,13 @@ python app.py  # serves presentation at localhost:8000
 ## Structure
 
 - `slides/` — 23 markdown slide files (01-title through 23-references), read on each page load
-- `code-rlvr/` — proof-of-concept: GRPO + LoRA training on OLMo-7B using 417 MBPP coding problems with test-based verification
+- `demo/` — the four RLVR fine-tuning runs the talk references (`code-rlvr/`, `math-rlvr/`, `gemma-rlvr/`, `gemma-rlvr-v2/`) plus the unified results report at `demo/results/rlvr_demo_report.html`
+- `demo/archive/` — superseded April-2026 proof-of-concept stub (GSM8K + PPO, single file)
 - `static/css/`, `static/js/`, `static/img/` — theme, Plotly charts, paper figures
-- `data/` — RLVR training datasets (GSM, MATH, IFEval)
-- `articles/` — reference PDFs (Tulu paper, Allen AI blog, etc.)
+- `data/` — RLVR training datasets (GSM, MATH, IFEval) — gitignored, reproducible via HF datasets
+- `articles/` — reference PDFs (Tulu paper, Allen AI blog, etc.) — gitignored
 - `references.md` — full reading list (23 papers)
+- `presentation.pdf`, `demo/results/rlvr_demo_report.pdf` — shareable PDF exports (regenerable via `make_slides_pdf.sh` and `demo/make_results_pdf.sh`)
 
 ## Design
 

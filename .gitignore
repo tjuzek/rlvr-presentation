@@ -15,9 +15,6 @@ articles/
 # RLVR training data (~60MB from HF) — reproducible via datasets.load_dataset
 data/
 
-# Fine-tuning pipelines are hosted separately at github.com/tjuzek/rlvr-demo
-code-rlvr/
-
 # Personal dev notes
 conversation-notes.md
 human-notes-tommie.txt

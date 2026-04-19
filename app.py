@@ -126,6 +126,10 @@ def build_presentation_html(slides: list[dict]) -> str:
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
 
+    <!-- Print/PDF-export rules: Reveal 5 auto-detects ?print-pdf and
+         reflows the DOM; we just hide our custom nav overlay for it. -->
+    <style>@media print {{ .slide-nav {{ display: none !important; }} }}</style>
+
     <!-- Code highlighting — use a darker, less saturated theme -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
 
